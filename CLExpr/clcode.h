@@ -3,12 +3,12 @@
 
 
 const char* common_ocl_functions = " \
-ulong clip_ulong(float x) { \
-    return (ulong)round(clamp(x, 0.0f, (float)(ULONG_MAX))); \
+size_t clip_ulong(float x) { \
+    return (size_t)round(clamp(x, 0.0f, (float)(ULONG_MAX))); \
 } \
     \
-long clip_long(float x) { \
-    return (long)round(clamp(x, (float)(LONG_MIN), (float)(LONG_MAX))); \
+ptrdiff_t clip_long(float x) { \
+    return (ptrdiff_t)round(clamp(x, (float)(LONG_MIN), (float)(LONG_MAX))); \
 } \
  \
 float interrogation(float x, float y, float z) { \
