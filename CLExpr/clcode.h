@@ -129,7 +129,7 @@ const char* exprxyz_source = "__kernel void expr(__global uchar *dstp, __global 
 
 const char* expr_source_lsb = "__kernel void expr(__global uchar *dstp, __global uchar* srcp, int width, int height) {      \
     int offset = get_global_id(0);    \
-    float x = ((ushort)srcp[offset] << 8) + ((ushort)srcp[offset+width*height]);    \
+    float x = upsample(srcp[offset], srcp[offset+width*height]);    \
     ushort result = clamp((int)round({{expression}}), 0, 65535);   \
     dstp[offset] = (uchar)((result >> 8) & 0xFF);  \
     dstp[offset+width*height] = (uchar)(result & 0xFF); \
@@ -137,8 +137,8 @@ const char* expr_source_lsb = "__kernel void expr(__global uchar *dstp, __global
 
 const char* exprxy_source_lsb = "__kernel void expr(__global uchar *dstp, __global uchar* srcp1, __global uchar* srcp2, int width, int height) {    \
     int offset = get_global_id(0);   \
-    float x = ((ushort)srcp1[offset] << 8); + ((ushort)srcp1[offset+width*height]);   \
-    float y = ((ushort)srcp2[offset] << 8) + ((ushort)srcp2[offset+width*height]);   \
+    float x = upsample(srcp1[offset], srcp1[offset+width*height]);   \
+    float y = upsample(srcp2[offset], srcp2[offset+width*height]);   \
     ushort result = clamp((int)round({{expression}}), 0, 65535);   \
     dstp[offset] = (uchar)((result >> 8) & 0xFF);  \
     dstp[offset+width*height] = (uchar)(result & 0xFF); \
@@ -146,9 +146,9 @@ const char* exprxy_source_lsb = "__kernel void expr(__global uchar *dstp, __glob
 
 const char* exprxyz_source_lsb = "__kernel void expr(__global uchar *dstp, __global uchar* srcp1, __global uchar* srcp2, __global uchar* srcp3, int width, int height) {    \
     int offset = get_global_id(0);   \
-    float x = ((ushort)srcp1[offset] << 8) + ((ushort)srcp1[offset+width*height]);   \
-    float y = ((ushort)srcp2[offset] << 8) + ((ushort)srcp2[offset+width*height]);   \
-    float z = ((ushort)srcp3[offset] << 8) + ((ushort)srcp3[offset+width*height]);   \
+    float x = upsample(srcp1[offset], srcp1[offset+width*height]);   \
+    float y = upsample(srcp2[offset], srcp2[offset+width*height]);   \
+    float z = upsample(srcp3[offset], srcp3[offset+width*height]);   \
     ushort result = clamp((int)round({{expression}}), 0, 65535);   \
     dstp[offset] = (uchar)((result >> 8) & 0xFF);  \
     dstp[offset+width*height] = (uchar)(result & 0xFF); \
