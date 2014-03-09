@@ -68,13 +68,11 @@ static const char* get_cl_error_string(cl_int error)
     }
 }
 
-static inline void check_cl_error(cl_int error, IScriptEnvironment *env)
-{
-    if (error != CL_SUCCESS)
-    {
-        env->ThrowError(get_cl_error_string(error));
-    }
-}
+#define CHECK_CL_ERROR(error, env) \
+    if (error != CL_SUCCESS) \
+    { \
+        env->ThrowError("cl_expr: OpenCL error \"%s\" [line %i]", get_cl_error_string(error), __LINE__); \
+    } \
 
 static void replace_first(std::string &source, const std::string &what, const std::string &new_value)
 {
@@ -255,14 +253,14 @@ ClExpr::ClExpr(PClip clip1, PClip clip2, PClip clip3,
     //init ocl
     cl_platform_id platform;
     cl_int error = clGetPlatformIDs(1, &platform, NULL);
-    check_cl_error(error, env);
+    CHECK_CL_ERROR(error, env);
 
     cl_device_id device;
-    check_cl_error(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL), env);
+    CHECK_CL_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL), env);
 
     cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
     context_ = clCreateContext(cps, 1, &device, NULL, NULL, &error);
-    check_cl_error(error, env);
+    CHECK_CL_ERROR(error, env);
 
     const static int planes[] = { PLANAR_Y, PLANAR_U, PLANAR_V };
     int planes_count = (vi.IsPlanar() && !vi.IsY8()) ? 3 : 1;
@@ -287,15 +285,15 @@ ClExpr::ClExpr(PClip clip1, PClip clip2, PClip clip3,
             env->ThrowError("cl_expr: height of all processed planes with lsb=true must be mod2");
         }
         current.command_queue = clCreateCommandQueue(context_, device, NULL, &error);
-        check_cl_error(error, env);
+        CHECK_CL_ERROR(error, env);
 
         current.dst_buffer = clCreateBuffer(context_, CL_MEM_WRITE_ONLY, width * height, NULL, &error);
-        check_cl_error(error, env);
+        CHECK_CL_ERROR(error, env);
 
         for (int j = 0; j < filter_type; j++)
         {
             current.src_buffers[j] = clCreateBuffer(context_, CL_MEM_READ_ONLY, width * height, NULL, &error);
-            check_cl_error(error, env);
+            CHECK_CL_ERROR(error, env);
         }
 
         for (int prev = 0; prev < i; prev++)
@@ -316,7 +314,7 @@ ClExpr::ClExpr(PClip clip1, PClip clip2, PClip clip3,
             
             current.own_program = true;
             current.program = clCreateProgramWithSource(context_, 1, (const char**)&cstr, NULL, &error);
-            check_cl_error(error, env);
+            CHECK_CL_ERROR(error, env);
 
             error = clBuildProgram(current.program, 0, NULL, NULL, NULL, NULL);
             if (error != CL_SUCCESS)
@@ -333,7 +331,7 @@ ClExpr::ClExpr(PClip clip1, PClip clip2, PClip clip3,
         }
 
         current.kernel = clCreateKernel(current.program, "expr", &error);
-        check_cl_error(error, env);
+        CHECK_CL_ERROR(error, env);
     }
 }
 
@@ -344,7 +342,7 @@ static void copy_source_buffers(PlaneData &pd, const std::vector<std::pair<const
     size_t dimensions[] = { width, height, 1 };
     for (size_t i = 0; i < planes.size(); ++i)
     {
-        check_cl_error(clEnqueueWriteBufferRect(pd.command_queue,
+        CHECK_CL_ERROR(clEnqueueWriteBufferRect(pd.command_queue,
             pd.src_buffers[i], CL_FALSE, offsets, offsets, dimensions,
             0, 0, planes[i].second, 0, planes[i].first,
             0, NULL, &pd.src_copy_events[i]), env);
@@ -358,18 +356,18 @@ static void run_kernel(PlaneData &pd, size_t src_planes_count,
     size_t global_work_size[] = { width * real_height };
     int arg_idx = 0;
 
-    check_cl_error(clSetKernelArg(pd.kernel, arg_idx++, sizeof(cl_mem), &pd.dst_buffer), env);
+    CHECK_CL_ERROR(clSetKernelArg(pd.kernel, arg_idx++, sizeof(cl_mem), &pd.dst_buffer), env);
     for (size_t i = 0; i < src_planes_count; ++i)
     {
-        check_cl_error(clSetKernelArg(pd.kernel, arg_idx++, sizeof(cl_mem), &pd.src_buffers[i]), env);
+        CHECK_CL_ERROR(clSetKernelArg(pd.kernel, arg_idx++, sizeof(cl_mem), &pd.src_buffers[i]), env);
     }
-    check_cl_error(clSetKernelArg(pd.kernel, arg_idx++, sizeof(int), &width), env);
+    CHECK_CL_ERROR(clSetKernelArg(pd.kernel, arg_idx++, sizeof(int), &width), env);
     if (lsb)
     {
-        check_cl_error(clSetKernelArg(pd.kernel, arg_idx++, sizeof(int), &real_height), env);
+        CHECK_CL_ERROR(clSetKernelArg(pd.kernel, arg_idx++, sizeof(int), &real_height), env);
     }
 
-    check_cl_error(
+    CHECK_CL_ERROR(
         clEnqueueNDRangeKernel(pd.command_queue, pd.kernel, 1, NULL, global_work_size, NULL, 
         src_planes_count, pd.src_copy_events, &pd.kernel_run_event)
         , env);
@@ -384,7 +382,7 @@ static void copy_dst_buffer(const PlaneData &pd,
 
     cl_int error = clEnqueueReadBufferRect(pd.command_queue, pd.dst_buffer, CL_FALSE, 
         offsets, offsets, dimensions, 0, 0, dst_pitch, 0, dstp, 1, &pd.kernel_run_event, NULL);
-    check_cl_error(error, env);
+    CHECK_CL_ERROR(error, env);
 }
 
 PVideoFrame ClExpr::GetFrame(int n, IScriptEnvironment* env)
