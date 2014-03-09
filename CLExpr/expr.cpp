@@ -144,7 +144,8 @@ struct PlaneData
     cl_event src_copy_events[3];
     cl_event kernel_run_event;
 
-    PlaneData() : kernel(nullptr), program(nullptr), own_program(false), dst_buffer(nullptr), kernel_run_event(nullptr)
+    PlaneData() : kernel(nullptr), program(nullptr), own_program(false), 
+        dst_buffer(nullptr), kernel_run_event(nullptr), command_queue(nullptr)
     {
         for (int i = 0; i < 3; ++i)
         {
