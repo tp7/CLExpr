@@ -3,12 +3,12 @@
 
 
 const char* common_ocl_functions = " \
-size_t clip_ulong(float x) { \
-    return (size_t)round(clamp(x, 0.0f, (float)(ULONG_MAX))); \
+uint clip_uint(float x) { \
+    return convert_uint_sat(round(x)); \
 } \
     \
-ptrdiff_t clip_long(float x) { \
-    return (ptrdiff_t)round(clamp(x, (float)(LONG_MIN), (float)(LONG_MAX))); \
+int clip_int(float x) { \
+    return convert_int_sat(round(x)); \
 } \
  \
 float interrogation(float x, float y, float z) { \
@@ -56,51 +56,51 @@ float mt_xor(float x, float y) { \
 } \
  \
 float andUB(float x, float y) { \
-	return (float)(clip_ulong(x) & clip_ulong(y));  \
+	return (float)(clip_uint(x) & clip_uint(y));  \
 } \
  \
 float orUB(float x, float y) { \
-	return (float)(clip_ulong(x) | clip_ulong(y));  \
+	return (float)(clip_uint(x) | clip_uint(y));  \
 } \
  \
 float xorUB(float x, float y) { \
-	return (float)(clip_ulong(x) ^ clip_ulong(y));  \
+	return (float)(clip_uint(x) ^ clip_uint(y));  \
 } \
  \
 float negateUB(float x) { \
-	return (float)(~clip_ulong(x));  \
+	return (float)(~clip_uint(x));  \
 } \
  \
 float posshiftUB(float x, float y) { \
-	return y >= 0 ? (float)(clip_ulong(x) << clip_long(y)) : (float)(clip_ulong(x) >> clip_long(-y));  \
+	return y >= 0 ? (float)(clip_uint(x) << clip_int(y)) : (float)(clip_uint(x) >> clip_int(-y));  \
 } \
  \
 float negshiftUB(float x, float y) { \
-	return y >= 0 ? (float)(clip_ulong(x) >> clip_long(y)) : (float)(clip_ulong(x) << clip_long(-y));  \
+	return y >= 0 ? (float)(clip_uint(x) >> clip_int(y)) : (float)(clip_uint(x) << clip_int(-y));  \
 } \
  \
 float andSB(float x, float y) { \
-	return (float)(clip_long(x) & clip_long(y));  \
+	return (float)(clip_int(x) & clip_int(y));  \
 } \
  \
 float orSB(float x, float y) { \
-	return (float)(clip_long(x) | clip_long(y));  \
+	return (float)(clip_int(x) | clip_int(y));  \
 } \
  \
 float xorSB(float x, float y) { \
-	return (float)(clip_long(x) ^ clip_long(y));  \
+	return (float)(clip_int(x) ^ clip_int(y));  \
 } \
  \
 float negateSB(float x) { \
-	return (float)(~clip_long(x));  \
+	return (float)(~clip_int(x));  \
 } \
  \
 float posshiftSB(float x, float y) { \
-	return y >= 0 ? (float)(clip_long(x) << clip_long(y)) : (float)(clip_long(x) >> clip_long(-y));  \
+	return y >= 0 ? (float)(clip_int(x) << clip_int(y)) : (float)(clip_int(x) >> clip_int(-y));  \
 } \
  \
 float negshiftSB(float x, float y) { \
-	return y >= 0 ? (float)(clip_long(x) >> clip_long(y)) : (float)(clip_long(x) << clip_long(-y));  \
+	return y >= 0 ? (float)(clip_int(x) >> clip_int(y)) : (float)(clip_int(x) << clip_int(-y));  \
 } \
 \
 ";
