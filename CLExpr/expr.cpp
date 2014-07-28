@@ -252,12 +252,22 @@ ClExpr::ClExpr(PClip clip1, PClip clip2, PClip clip3,
     }
 
     //init ocl
-    cl_platform_id platform;
-    cl_int error = clGetPlatformIDs(1, &platform, NULL);
+    cl_platform_id platform[3];
+    cl_uint platforms_count;
+    cl_int error = clGetPlatformIDs(3, platform, &platforms_count);
     CHECK_CL_ERROR(error, env);
 
     cl_device_id device;
-    CHECK_CL_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL), env);
+    cl_int last_error;
+    for (cl_uint i = 0; i < platforms_count; ++i)
+    {
+        last_error = clGetDeviceIDs(platform[i], CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+        if (last_error == CL_SUCCESS)
+        {
+            break;
+        }
+    }
+    CHECK_CL_ERROR(last_error, env);
 
     cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
     context_ = clCreateContext(cps, 1, &device, NULL, NULL, &error);
