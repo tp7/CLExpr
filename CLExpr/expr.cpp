@@ -259,7 +259,7 @@ ClExpr::ClExpr(PClip clip1, PClip clip2, PClip clip3,
 
     cl_device_id device;
     cl_int last_error;
-    cl_platform_id platform;
+    cl_platform_id platform = nullptr;
     for (cl_uint i = 0; i < platforms_count; ++i)
     {
         last_error = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, 1, &device, NULL);
