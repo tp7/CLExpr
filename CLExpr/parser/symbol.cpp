@@ -104,7 +104,11 @@ std::string Context::rec_infix()
     case Symbol::VARIABLE_X: 
     case Symbol::VARIABLE_Y: 
     case Symbol::VARIABLE_Z: 
-    case Symbol::NUMBER: return s.value;
+        return s.value;
+    case Symbol::NUMBER: 
+        if (s.value.find('.') == std::string::npos)
+            return s.value + ".0f";
+        return s.value;
     case Symbol::FUNCTION:
         if (s.nParameter == 1) {
             return s.code + "(" + rec_infix() + ")";
