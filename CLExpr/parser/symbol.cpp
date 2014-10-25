@@ -64,23 +64,15 @@ type(UNDEFINED), value(""), value2("")
 Symbol::Symbol(std::string value, Type type, int nParameter, std::string op) :
 type(type), value(value), value2(""), nParameter(nParameter), code(op)
 {
-    if (type == NUMBER)
-    {
-        dValue = (float)atof(value.c_str());
-    }
 }
 
 Symbol::Symbol(std::string value, std::string value2, Type type, int nParameter, std::string op) :
 type(type), value(value), value2(value2), nParameter(nParameter), code(op)
 {
-    if (type == NUMBER)
-    {
-        dValue = (float)atof(value.c_str());
-    }
 }
 
 Symbol::Symbol(std::string value, float dValue, Type type, int nParameter, std::string op) :
-type(type), value(value), value2(""), nParameter(nParameter), dValue(dValue), code(op)
+type(type), value(value), value2(""), nParameter(nParameter), code(op)
 {
 }
 

@@ -27,7 +27,6 @@ public:
    std::string value;
    std::string value2;
    int nParameter;
-   float dValue;
    std::string code;
 
 private:
